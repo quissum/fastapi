@@ -1,0 +1,22 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment
+venv/
+.venv/
+
+# SQLite database
+tasks.db
+*.db
+
+# VSCode / IDE
+.vscode/
+.idea/
+
+# Docker
+*.pid
+
+# OS files
+.DS_Store
