@@ -1,4 +1,3 @@
-from typing import Any
 from pydantic import BaseModel
 
 
@@ -39,11 +38,3 @@ class STaskUpdate(BaseModel):
     name: str | None = None
     content: str | None = None
     meta: STaskMeta | None = None
-
-
-meta = {
-    "tags": list[str],
-    "deleted": bool,
-    "archived": bool,
-    "pinned": bool,
-}

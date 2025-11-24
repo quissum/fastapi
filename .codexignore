@@ -1,0 +1,32 @@
+# General trash / cache
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+
+# Virtual environments
+venv/
+.venv/
+
+# Git
+.git/
+.gitignore
+
+# Secrets
+.env
+*.env
+
+# Logs / temporary files
+*.log
+tmp/
+temp/
+.cache/
+
+# Python / Alembic artifacts, if they are heavy
+alembic/versions/*.pyc
+
+# Docker / other
+*.pid
+*.sqlite3
+*.db
+

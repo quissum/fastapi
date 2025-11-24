@@ -1,14 +1,18 @@
+import uuid
+
 from sqlalchemy import case, exists, func, select, text
-from .database import MTask, new_session
-from .schemas import STaskAdd, STaskUpdate
+
+from app.db.models.task import MTask
+from app.db.session import new_session
+from app.schemas.task import STaskAdd, STaskUpdate
 
 
 class TaskRepository:
     @classmethod
-    async def add_one(cls, data: STaskAdd) -> int:
+    async def add_one(cls, data: STaskAdd, user_id: uuid.UUID) -> int:
         async with new_session() as session:
             data_dict = data.model_dump()
-            task = MTask(**data_dict)
+            task = MTask(**data_dict, user_id=user_id)
             session.add(task)
             await session.flush()
             await session.commit()
@@ -16,16 +20,19 @@ class TaskRepository:
             return task.id
 
     @classmethod
-    async def get_list_tasks(cls, q: str | None, limit: int, offset: int) -> list[MTask]:
+    async def get_list_tasks(
+        cls, q: str | None, limit: int, offset: int, user_id: uuid.UUID
+    ) -> tuple[list[MTask], int]:
         async with new_session() as session:
-            stmt = select(MTask)
+            stmt = select(MTask).where(MTask.user_id == user_id)
 
             if q and q.strip().startswith("#"):
                 tag_value = q.strip()[1:]
                 pattern = f"%{tag_value}%"
 
                 tags_lateral = text(
-                    "jsonb_array_elements_text(tasks.meta->'tags') AS tag(tag)")
+                    "jsonb_array_elements_text(tasks.meta->'tags') AS tag(tag)"
+                )
 
                 stmt = stmt.where(
                     MTask.meta.is_not(None),
@@ -33,13 +40,14 @@ class TaskRepository:
                         select(1)
                         .select_from(tags_lateral)
                         .where(text("tag ILIKE :pattern"))
-                    )
+                    ),
                 ).params(pattern=pattern)
                 stmt = stmt.order_by(MTask.updated_at.desc())
             elif q:
                 pattern = f"%{q.strip()}%"
-                stmt = stmt.where(MTask.name.ilike(pattern) |
-                                  MTask.content.ilike(pattern))
+                stmt = stmt.where(
+                    MTask.name.ilike(pattern) | MTask.content.ilike(pattern)
+                )
                 name_first = case((MTask.name.ilike(pattern), 0), else_=1)
                 stmt = stmt.order_by(name_first, MTask.updated_at.desc())
             else:
@@ -61,15 +69,20 @@ class TaskRepository:
             return result.scalar_one()
 
     @classmethod
-    async def get_one(cls, id: int) -> MTask | None:
+    async def get_one(cls, id: int, user_id: uuid.UUID) -> MTask | None:
         async with new_session() as session:
-            result = await session.get(MTask, id)
-            return result
+            result = await session.execute(
+                select(MTask).where(MTask.id == id, MTask.user_id == user_id)
+            )
+            return result.scalar_one_or_none()
 
     @classmethod
-    async def delete_one(cls, id: int) -> bool:
+    async def delete_one(cls, id: int, user_id: uuid.UUID) -> bool:
         async with new_session() as session:
-            task = await session.get(MTask, id)
+            result = await session.execute(
+                select(MTask).where(MTask.id == id, MTask.user_id == user_id)
+            )
+            task = result.scalar_one_or_none()
 
             if task is None:
                 return False
@@ -79,9 +92,14 @@ class TaskRepository:
             return True
 
     @classmethod
-    async def update_one(cls, id: int, patch: STaskUpdate) -> bool:
+    async def update_one(
+        cls, id: int, patch: STaskUpdate, user_id: uuid.UUID
+    ) -> bool:
         async with new_session() as session:
-            task = await session.get(MTask, id)
+            result = await session.execute(
+                select(MTask).where(MTask.id == id, MTask.user_id == user_id)
+            )
+            task = result.scalar_one_or_none()
 
             if task is None:
                 return False
