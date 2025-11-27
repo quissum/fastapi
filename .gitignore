@@ -10,6 +10,7 @@ venv/
 # SQLite database
 tasks.db
 *.db
+*.sql
 
 # VSCode / IDE
 .vscode/

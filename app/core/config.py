@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     auth_secret: str = Field(default="CHANGE_ME_SUPER_SECRET")
     reset_secret: str = Field(default="CHANGE_ME_RESET_SECRET")
     verify_secret: str = Field(default="CHANGE_ME_VERIFY_SECRET")
-    access_token_lifetime_seconds: int = Field(default=60 * 60 * 24)
+    access_token_lifetime_seconds: int = Field(default=60 * 60)
 
     cookie_name: str = Field(default="auth")
     cookie_max_age_seconds: int = Field(default=60 * 60 * 24 * 7)
