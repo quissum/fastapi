@@ -2,6 +2,7 @@ fastapi
 fastapi-users
 fastapi-users-db-sqlalchemy
 
+gunicorn
 uvicorn[standard]
 SQLAlchemy[asyncio]
 asyncpg
