@@ -19,7 +19,7 @@ cookie_transport = CookieTransport(
     cookie_max_age=settings.cookie_max_age_seconds,
     cookie_httponly=True,
     cookie_secure=settings.cookie_secure,
-    cookie_samesite="lax",
+    cookie_samesite="none",
 )
 
 auth_backend = AuthenticationBackend(
